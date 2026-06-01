@@ -8,6 +8,9 @@ class ProfileBase(BaseModel):
     display_name: Optional[str] = None
     phone: Optional[str] = None
 
+    class Config:
+        from_attributes = True
+
 class ProfileCreate(ProfileBase):
     pass
 

@@ -5,6 +5,17 @@ import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
+
+# HACK: Corrige o bug do passlib com bcrypt >= 4.0.0 no Windows/Python 3.10+
+try:
+    import bcrypt
+    if not hasattr(bcrypt, "__about__"):
+        class DummyAbout:
+            __version__ = getattr(bcrypt, "__version__", "4.0.0")
+        bcrypt.__about__ = DummyAbout()
+except ImportError:
+    pass
+
 from passlib.context import CryptContext
 from app.database import get_db
 from app.models import User, UserRole

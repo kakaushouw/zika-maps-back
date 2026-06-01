@@ -1,0 +1,45 @@
+services:
+  # ----------------------------------------------------------------------------
+  # Serviço de Banco de Dados: PostgreSQL
+  # ----------------------------------------------------------------------------
+  db:
+    image: postgres:15-alpine
+    container_name: zikamaps_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-altere_este_password_seguro_123}
+      POSTGRES_DB: ${POSTGRES_DB:-zikamaps_db}
+    ports:
+      - "127.0.0.1:5432:5432" # Exposto localmente para segurança (evita acesso externo direto)
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------------------------------
+  # Serviço do BackEnd: FastAPI (ZikaMaps API)
+  # ----------------------------------------------------------------------------
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: zikamaps_api
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "${PORT:-5000}:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+# ------------------------------------------------------------------------------
+# Volumes Persistentes
+# ------------------------------------------------------------------------------
+volumes:
+  postgres_data:
+    driver: local

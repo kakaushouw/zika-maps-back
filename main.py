@@ -15,7 +15,7 @@ else:
 # Importar banco de dados para inicializacao automatica das tabelas
 from app.database import engine, Base
 # Importar modelos para registrar no Base
-from app.models import User, Profile, UserRole, Report
+from app.models import User, Profile, UserRole, Report, UploadedFile
 
 # Inicializar tabelas do banco de dados (se nao existirem)
 try:
@@ -39,6 +39,10 @@ origins = [
     frontend_url,
     "http://localhost:8080",
     "http://127.0.0.1:8080",
+    "http://localhost:8081",
+    "http://127.0.0.1:8081",
+    "http://localhost:8082",
+    "http://127.0.0.1:8082",
     "http://localhost:3000",
     "http://localhost:5173",
 ]
@@ -92,4 +96,12 @@ def read_root():
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", "5000"))
+    
+    # Exibe links diretos e clicáveis no terminal local
+    print("\n" + "="*65)
+    print(" 🚀 ZikaMaps API está ONLINE!")
+    print(f" 👉 API local: http://127.0.0.1:{port}")
+    print(f" 👉 Documentação interativa (Swagger): http://127.0.0.1:{port}/docs")
+    print("="*65 + "\n")
+    
     uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)

@@ -1,6 +1,7 @@
+import os
 import uuid
 from datetime import datetime, date
-from sqlalchemy import Column, String, DateTime, ForeignKey, Text, Numeric, Date, Enum as SqlEnum
+from sqlalchemy import Column, String, DateTime, ForeignKey, Text, Numeric, Date, Enum as SqlEnum, LargeBinary
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -54,8 +55,26 @@ class Report(Base):
     date = Column(Date, default=date.today)
     lat = Column(Numeric(10, 6), nullable=False)
     lng = Column(Numeric(10, 6), nullable=False)
-    image_url = Column(Text, nullable=True)
+    image_id = Column(String(36), ForeignKey("uploaded_files.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     user = relationship("User", back_populates="reports")
+    image = relationship("UploadedFile")
+
+    @property
+    def image_url(self) -> str | None:
+        if self.image_id:
+            backend_url = os.getenv("BACKEND_URL", "")
+            return f"{backend_url}/api/reports/image/{self.image_id}"
+        return None
+
+
+class UploadedFile(Base):
+    __tablename__ = "uploaded_files"
+
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    filename = Column(String(255), nullable=False)
+    content_type = Column(String(100), nullable=False)
+    data = Column(LargeBinary, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
